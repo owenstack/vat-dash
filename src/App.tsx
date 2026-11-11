@@ -1,21 +1,130 @@
-import { Button } from "@/components/ui/button"
+import { DownloadIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useState } from "react";
+import {
+	AnnualCard,
+	Kpis,
+	MapCard,
+	RankCard,
+	TrendCard,
+	ZoneCard,
+} from "@/components/hero";
+import { Seasonality, States, Timing, Zones } from "@/components/sections";
+import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import csvUrl from "@/data/vat_corrected_wide.csv?url";
+import { STATES, YEARS, type Year } from "@/lib/data";
 
-export function App() {
-  return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
-  )
+const h2 = "text-lg font-semibold tracking-tight";
+const grid = "grid grid-cols-1 gap-4 lg:grid-cols-12";
+
+export default function App() {
+	const [st, setSt] = useState("LAGOS");
+	const [yr, setYr] = useState<Year>("all");
+	const [dark, setDark] = useState(
+		document.documentElement.classList.contains("dark"),
+	);
+	const toggle = () => {
+		const next = !dark;
+		document.documentElement.classList.toggle("dark", next);
+		localStorage.setItem("theme", next ? "dark" : "light");
+		setDark(next);
+	};
+	const p = { st, yr, setSt, setYr };
+	return (
+		<>
+			<header className="bg-background/90 sticky top-0 z-20 border-b backdrop-blur">
+				<div className="mx-auto flex max-w-340 flex-wrap items-center gap-3 px-5 py-3 md:px-6">
+					<div className="min-w-48 flex-1">
+						<h1 className="text-xl font-semibold tracking-tight">
+							Nigeria VAT monitor
+						</h1>
+						<p className="text-muted-foreground text-xs">
+							Monthly VAT allocation, 36 states ·{" "}
+							{yr === "all" ? `${YEARS[0]}–${YEARS.at(-1)}` : yr}
+						</p>
+					</div>
+					<Select value={st} onValueChange={(v) => setSt(v ?? "")}>
+						<SelectTrigger aria-label="State" className="w-40">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{STATES.map((s) => (
+								<SelectItem key={s} value={s}>
+									{s}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<Select
+						value={String(yr)}
+						onValueChange={(v) => setYr(v === "all" ? "all" : Number(v))}
+					>
+						<SelectTrigger aria-label="Year" className="w-32">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">
+								{YEARS[0]}–{YEARS.at(-1)}
+							</SelectItem>
+							{YEARS.map((y) => (
+								<SelectItem key={y} value={String(y)}>
+									{y}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<Button
+						variant="outline"
+						render={
+							<a href={csvUrl} download="vat_corrected_wide.csv">
+								<DownloadIcon /> CSV
+							</a>
+						}
+					/>
+					<Button
+						variant="outline"
+						size="icon"
+						onClick={toggle}
+						aria-label="Toggle theme"
+					>
+						{dark ? <SunIcon /> : <MoonIcon />}
+					</Button>
+				</div>
+			</header>
+			<main className="mx-auto max-w-340 space-y-10 p-5 md:p-6">
+				<section className={grid}>
+					<Kpis yr={yr} />
+					<MapCard {...p} />
+					<TrendCard {...p} />
+					<RankCard {...p} />
+					<AnnualCard {...p} />
+					<ZoneCard {...p} />
+				</section>
+				<section className="space-y-4">
+					<h2 className={h2}>State analysis</h2>
+					<States st={st} yr={yr} />
+				</section>
+				<section className="space-y-4">
+					<h2 className={h2}>Zones</h2>
+					<Zones st={st} yr={yr} />
+				</section>
+				<section className="space-y-4">
+					<h2 className={h2}>Timing</h2>
+					<Timing st={st} yr={yr} />
+					<Seasonality />
+				</section>
+				<p className="text-muted-foreground text-xs">
+					Source: vat_corrected_wide.csv · FCT is not in the file, so national
+					means the sum of the 36 states · Map boundaries: Natural Earth (public
+					domain).
+				</p>
+			</main>
+		</>
+	);
 }
-
-export default App
