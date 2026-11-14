@@ -6,9 +6,8 @@ import {
 	MapCard,
 	RankCard,
 	TrendCard,
-	ZoneCard,
 } from "@/components/hero";
-import { Seasonality, States, Timing, Zones } from "@/components/sections";
+import { Seasonality, States, Timing } from "@/components/sections";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -24,7 +23,7 @@ const h2 = "text-lg font-semibold tracking-tight";
 const grid = "grid grid-cols-1 gap-4 lg:grid-cols-12";
 
 export default function App() {
-	const [st, setSt] = useState("LAGOS");
+	const [st, setSt] = useState("ANAMBRA");
 	const [yr, setYr] = useState<Year>("all");
 	const [dark, setDark] = useState(
 		document.documentElement.classList.contains("dark"),
@@ -42,10 +41,10 @@ export default function App() {
 				<div className="mx-auto flex max-w-340 flex-wrap items-center gap-3 px-5 py-3 md:px-6">
 					<div className="min-w-48 flex-1">
 						<h1 className="text-xl font-semibold tracking-tight">
-							Nigeria VAT monitor
+							South East VAT monitor
 						</h1>
 						<p className="text-muted-foreground text-xs">
-							Monthly VAT allocation, 36 states ·{" "}
+							Monthly VAT allocation, South East · 5 states ·{" "}
 							{yr === "all" ? `${YEARS[0]}–${YEARS.at(-1)}` : yr}
 						</p>
 					</div>
@@ -104,15 +103,10 @@ export default function App() {
 					<TrendCard {...p} />
 					<RankCard {...p} />
 					<AnnualCard {...p} />
-					<ZoneCard {...p} />
 				</section>
 				<section className="space-y-4">
 					<h2 className={h2}>State analysis</h2>
 					<States st={st} yr={yr} />
-				</section>
-				<section className="space-y-4">
-					<h2 className={h2}>Zones</h2>
-					<Zones st={st} yr={yr} />
 				</section>
 				<section className="space-y-4">
 					<h2 className={h2}>Timing</h2>
@@ -120,9 +114,9 @@ export default function App() {
 					<Seasonality />
 				</section>
 				<p className="text-muted-foreground text-xs">
-					Source: vat_corrected_wide.csv · FCT is not in the file, so national
-					means the sum of the 36 states · Map boundaries: Natural Earth (public
-					domain).
+					Source: vat_corrected_wide.csv · scoped to the five South East states
+					(ABIA, ANAMBRA, EBONYI, ENUGU, IMO); totals are the sum of those five
+					· Map boundaries: Natural Earth (public domain).
 				</p>
 			</main>
 		</>

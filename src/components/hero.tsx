@@ -1,26 +1,7 @@
 import { useState } from "react";
-import {
-	Bar,
-	BarChart,
-	Cell,
-	Line,
-	LineChart,
-	Pie,
-	PieChart,
-	YAxis,
-} from "recharts";
-import { NigeriaMap } from "@/components/nigeria-map";
-import {
-	bn,
-	Chart,
-	cfg,
-	grid,
-	Panel,
-	tip,
-	xm,
-	ym,
-	zc,
-} from "@/components/sections";
+import { Bar, BarChart, Cell, Line, LineChart, YAxis } from "recharts";
+import { SeMap } from "@/components/se-map";
+import { Chart, cfg, grid, Panel, tip, xm, ym } from "@/components/sections";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +16,6 @@ import {
 	ChartLegend,
 	ChartLegendContent,
 	ChartTooltip,
-	ChartTooltipContent,
 } from "@/components/ui/chart";
 import {
 	growth,
@@ -51,8 +31,6 @@ import {
 	V,
 	YEARS,
 	type Year,
-	ZONE_NAMES,
-	zoneTot,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -114,7 +92,7 @@ export function Kpis({ yr }: Pick<P, "yr">) {
 			<Kpi
 				label="Total VAT"
 				value={money(T)}
-				badge={`${yr === "all" ? "all years" : yr} · 36 states`}
+				badge={`${yr === "all" ? "all years" : yr} · South East · 5 states`}
 			/>
 			<Kpi
 				label="Monthly average"
@@ -147,11 +125,11 @@ export function MapCard({ st, yr, setSt }: P) {
 			<CardHeader>
 				<CardTitle>VAT by state</CardTitle>
 				<CardDescription>
-					Click a state to focus the dashboard on it
+					South East · click a state to focus the dashboard on it
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<NigeriaMap values={values} selected={st} onSelect={setSt} />
+				<SeMap values={values} selected={st} onSelect={setSt} />
 			</CardContent>
 		</Card>
 	);
@@ -166,12 +144,12 @@ export function TrendCard({ st, yr }: P) {
 	const extra = top3 ? ranked.slice(0, 3).filter((s) => s !== st) : [];
 	const keys = [st, ...extra];
 	const config: ChartConfig = {
-		national: { label: "National", color: "var(--chart-2)" },
+		national: { label: "Region", color: "var(--chart-2)" },
 	};
 	keys.forEach((s, i) => {
 		config[`s${i}`] = {
-				label: cap(s),
-				color: i === 0 ? "var(--chart-1)" : `var(--chart-${i + 2})`,
+			label: cap(s),
+			color: i === 0 ? "var(--chart-1)" : `var(--chart-${i + 2})`,
 		};
 	});
 	const data = ix.map((i) => ({
@@ -188,7 +166,7 @@ export function TrendCard({ st, yr }: P) {
 					<div className="space-y-1.5">
 						<CardTitle>Collection trend</CardTitle>
 						<CardDescription>
-							Monthly VAT, ₦bn · national on the left axis, states on the right
+							Monthly VAT, ₦bn · region on the left axis, states on the right
 						</CardDescription>
 					</div>
 					<Button
@@ -205,7 +183,7 @@ export function TrendCard({ st, yr }: P) {
 					<span className="font-medium">{cap(st)}</span>
 					<Badge variant="outline">{money(sT)}</Badge>
 					<Badge variant="outline">
-						{((sT / T) * 100).toFixed(1)}% of national
+						{((sT / T) * 100).toFixed(1)}% of region
 					</Badge>
 					<Badge
 						variant="outline"
@@ -281,9 +259,9 @@ export function RankCard({ st, yr, setSt }: P) {
 	return (
 		<Card className="lg:col-span-4">
 			<CardHeader>
-				<CardTitle>Top states</CardTitle>
+				<CardTitle>State rankings</CardTitle>
 				<CardDescription>
-					Ranked by VAT in period · click to focus
+					All five South East states · click to focus
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-1">
@@ -331,8 +309,8 @@ export function AnnualCard({ yr, setYr }: P) {
 	return (
 		<Panel
 			title="VAT by year"
-			desc="National totals, ₦bn · click a bar to filter"
-			span="lg:col-span-4"
+			desc="South East totals, ₦bn · click a bar to filter"
+			span="lg:col-span-8"
 		>
 			<Chart config={cfg(["total", "Total"])}>
 				<BarChart
@@ -361,34 +339,6 @@ export function AnnualCard({ yr, setYr }: P) {
 						))}
 					</Bar>
 				</BarChart>
-			</Chart>
-		</Panel>
-	);
-}
-
-export function ZoneCard({ yr }: P) {
-	const ix = idx(yr);
-	return (
-		<Panel title="Zones" desc="Share of total in period" span="lg:col-span-4">
-			<Chart config={{}}>
-				<PieChart>
-					<ChartTooltip
-						content={<ChartTooltipContent formatter={(value) => bn(Number(value))} />}
-					/>
-					<Pie
-						data={ZONE_NAMES.map((z, i) => ({
-							name: z,
-							value: zoneTot(z, ix),
-							fill: zc(i),
-						}))}
-						dataKey="value"
-						nameKey="name"
-						innerRadius={55}
-						outerRadius={90}
-						strokeWidth={2}
-					/>
-					<ChartLegend content={<ChartLegendContent />} />
-				</PieChart>
 			</Chart>
 		</Panel>
 	);

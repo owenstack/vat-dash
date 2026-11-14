@@ -6,8 +6,6 @@ import {
 	BarChart,
 	CartesianGrid,
 	Cell,
-	Line,
-	LineChart,
 	PolarAngleAxis,
 	PolarGrid,
 	PolarRadiusAxis,
@@ -46,7 +44,6 @@ import {
 	idx,
 	LABELS,
 	MONTHS,
-	money,
 	NAT,
 	natYear,
 	pct,
@@ -57,19 +54,13 @@ import {
 	YEARS,
 	type Year,
 	yearTot,
-	ZONE_NAMES,
-	ZONES,
-	zoneTot,
 } from "@/lib/data";
 
 type P = { st: string; yr: Year };
-// Reuse the dashboard chart palette; tint the sixth zone because the palette has five colors.
-export const zc = (i: number) =>
-	i < 5
-		? `var(--chart-${i + 1})`
-		: "color-mix(in oklab, var(--chart-1) 55%, var(--background))";
 export const bn = (v: number) => `₦${Number(v).toFixed(1)}bn`;
-export const tip = <ChartTooltipContent formatter={value => bn(Number(value))} />;
+export const tip = (
+	<ChartTooltipContent formatter={(value) => bn(Number(value))} />
+);
 export const grid = <CartesianGrid vertical={false} />;
 export const xm = (
 	<XAxis
@@ -145,7 +136,7 @@ export function Timing({ yr }: P) {
 		<div className={grid12}>
 			<Panel
 				title="Year on year"
-				desc={`National, ${gy} vs ${gy - 1}, ₦bn`}
+				desc={`South East, ${gy} vs ${gy - 1}, ₦bn`}
 				span="lg:col-span-6"
 			>
 				<Chart
@@ -172,7 +163,7 @@ export function Timing({ yr }: P) {
 			</Panel>
 			<Panel
 				title="Rolling 12-month total"
-				desc="National, ₦bn"
+				desc="South East, ₦bn"
 				span="lg:col-span-6"
 			>
 				<Chart config={cfg(["roll", "12-month total", "var(--chart-3)"])}>
@@ -289,7 +280,7 @@ export function States({ st, yr }: P) {
 						<ChartTooltip
 							cursor={false}
 							content={
-								<ChartTooltipContent formatter={v => pct(Number(v))} />
+								<ChartTooltipContent formatter={(v) => pct(Number(v))} />
 							}
 						/>
 						<Bar dataKey="g" radius={4}>
@@ -355,9 +346,9 @@ export function States({ st, yr }: P) {
 			</Panel>
 			<Card className="lg:col-span-6">
 				<CardHeader>
-					<CardTitle>Share of national VAT by year</CardTitle>
+					<CardTitle>Share of regional VAT by year</CardTitle>
 					<CardDescription>
-						Top 12 states; darker means a larger share
+						Darker means a larger share of the South East
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -397,116 +388,6 @@ export function States({ st, yr }: P) {
 	);
 }
 
-export function Zones({ yr }: P) {
-	const ix = idx(yr);
-	const zcfg = Object.fromEntries(
-		ZONE_NAMES.map((z, i) => [z, { label: z, color: zc(i) }]),
-	) as ChartConfig;
-	return (
-		<div className={grid12}>
-			<Panel
-				title="Total by zone"
-				desc="₦bn in period"
-				span="lg:col-span-4"
-				tall
-			>
-				<Chart config={{}}>
-					<BarChart
-						data={ZONE_NAMES.map((z, i) => ({
-							m: z,
-							v: zoneTot(z, ix),
-							fill: zc(i),
-						}))}
-						layout="vertical"
-						margin={{ left: 20 }}
-					>
-						<CartesianGrid horizontal={false} />
-						<XAxis type="number" tickLine={false} axisLine={false} />
-						<YAxis
-							type="category"
-							dataKey="m"
-							tickLine={false}
-							axisLine={false}
-							width={90}
-							fontSize={11}
-						/>
-						<ChartTooltip
-							cursor={false}
-							content={<ChartTooltipContent formatter={value => bn(Number(value))} />}
-						/>
-						<Bar dataKey="v" radius={5}>
-							{ZONE_NAMES.map((z, i) => (
-								<Cell key={z} fill={zc(i)} />
-							))}
-						</Bar>
-					</BarChart>
-				</Chart>
-			</Panel>
-			<Panel
-				title="Zone mix by year"
-				desc="₦bn, stacked"
-				span="lg:col-span-8"
-				tall
-			>
-				<Chart config={zcfg}>
-					<BarChart
-						data={YEARS.map((y) => ({
-							m: String(y),
-							...Object.fromEntries(
-								ZONE_NAMES.map((z) => [z, zoneTot(z, idx(y))]),
-							),
-						}))}
-						margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
-						barCategoryGap="24%"
-					>
-						{grid}
-						{xm}
-						{ym}
-						<ChartTooltip cursor={false} content={tip} />
-						<ChartLegend content={<ChartLegendContent />} />
-						{ZONE_NAMES.map((z, i) => (
-							<Bar
-								key={z}
-								dataKey={z}
-								stackId="a"
-								fill={zc(i)}
-							/>
-						))}
-					</BarChart>
-				</Chart>
-			</Panel>
-			<Panel title="Zone monthly trend" desc="₦bn" span="lg:col-span-12" tall>
-				<Chart config={zcfg}>
-					<LineChart
-						data={LABELS.map((m, i) => ({
-							m,
-							...Object.fromEntries(
-								ZONE_NAMES.map((z) => [z, sum(ZONES[z].map((s) => V[s][i]))]),
-							),
-						}))}
-					>
-						{grid}
-						{xm}
-						{ym}
-						<ChartTooltip content={tip} />
-						<ChartLegend content={<ChartLegendContent />} />
-						{ZONE_NAMES.map((z, i) => (
-							<Line
-								key={z}
-								dataKey={z}
-								type="monotone"
-								stroke={zc(i)}
-								strokeWidth={2}
-								dot={false}
-							/>
-						))}
-					</LineChart>
-				</Chart>
-			</Panel>
-		</div>
-	);
-}
-
 export function Seasonality() {
 	const si = MONTHS.map((m, k) => ({
 		m,
@@ -531,9 +412,7 @@ export function Seasonality() {
 					<RadarChart data={si}>
 						<ChartTooltip
 							content={
-								<ChartTooltipContent
-									formatter={v => Number(v).toFixed(0)}
-								/>
+								<ChartTooltipContent formatter={(v) => Number(v).toFixed(0)} />
 							}
 						/>
 						<PolarGrid />
@@ -554,7 +433,7 @@ export function Seasonality() {
 			</Panel>
 			<Panel
 				title="Month-on-month change"
-				desc="National, %"
+				desc="South East, %"
 				span="lg:col-span-7"
 				tall
 			>
@@ -571,7 +450,7 @@ export function Seasonality() {
 						<ChartTooltip
 							cursor={false}
 							content={
-								<ChartTooltipContent formatter={v => pct(Number(v))} />
+								<ChartTooltipContent formatter={(v) => pct(Number(v))} />
 							}
 						/>
 						<Bar dataKey="v">
